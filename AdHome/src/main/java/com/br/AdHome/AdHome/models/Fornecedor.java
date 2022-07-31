@@ -1,0 +1,158 @@
+package com.br.AdHome.AdHome.models;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+@Entity
+@Table(name = "tb_fornecedor")
+public class Fornecedor implements Serializable{
+	private static final long serialVersionUID = 1L;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "fornecedor_id",nullable = false, length = 10, unique = true)
+	private Long fornecedorId;
+	@NotBlank
+	@Column(name = "nome_fornecedor",nullable = false, length = 60)
+	private String nome;
+	@NotBlank
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	@Column(name = "data_Cadastro", nullable = false, length = 60)
+	private LocalDateTime dataCadastro;
+	@NotBlank
+	@DateTimeFormat(pattern = "yyyy-MM-dd")
+	@Column(name = "data_Altera", nullable = false, length = 60)
+	private LocalDateTime dataAltera;
+	private EnderecoEnum enderecoEnum;
+	private ContatoEnum contatoEnum;
+	
+	@ManyToMany(cascade = CascadeType.PERSIST,fetch = FetchType.LAZY)
+	@JoinTable(
+			name = "Fornecedor_Endereco",
+			joinColumns = @JoinColumn(name = "fornecedor_fk"),
+			inverseJoinColumns = @JoinColumn(name = "endereco_fk"))
+	private Set<Endereco> endereco;
+	/*
+	 * Quando e criado um Set<> ele ao invés de criar uma lista de objetos
+	 * ele cria um grupo unico se objetos evitando ser criado varias instancias 
+	 * ao mesmo objeto
+	 */
+	@OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+	@JoinColumn(name = "fornece_id")
+	private Set<Contato> contatos;
+	
+	@OneToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+	@JoinColumn(name = "fornece_id")
+	private Set<Produto> produtos;
+	
+	public Fornecedor() {
+		
+	}
+	public Fornecedor(String nome, LocalDateTime dataCadastro, LocalDateTime dataAltera) {
+		super();
+		this.setNome(getNome());
+		this.setEndereco(getEndereco());
+		this.setContatos(getContatos());
+		this.setProdutos(getProdutos());
+		this.setDataAltera(getDataAltera());
+		this.setDataCadastro(getDataCadastro());
+	}
+	public Long getFornecedorId() {
+		return fornecedorId;
+	}
+	public void setFornecedorId(Long fornecedorId) {
+		this.fornecedorId = fornecedorId;
+	}
+	public String getNome() {
+		return nome;
+	}
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+	public LocalDateTime getDataCadastro() {
+		return dataCadastro;
+	}
+	public void setDataCadastro(LocalDateTime dataCadastro) {
+		this.dataCadastro = dataCadastro;
+	}
+	public LocalDateTime getDataAltera() {
+		return dataAltera;
+	}
+	public void setDataAltera(LocalDateTime dataAltera) {
+		this.dataAltera = dataAltera;
+	}
+	public Set<Endereco> getEndereco() {
+		return endereco;
+	}
+	public void setEndereco(Set<Endereco> endereco) {
+		this.endereco = endereco;
+	}
+	public Set<Contato> getContatos() {
+		return contatos;
+	}
+	public void setContatos(Set<Contato> contatos) {
+		this.contatos = contatos;
+	}
+	public Set<Produto> getProdutos() {
+		return produtos;
+	}
+	public void setProdutos(Set<Produto> produtos) {
+		this.produtos = produtos;
+	}
+	
+	public EnderecoEnum getEnderecoEnum() {
+		return enderecoEnum;
+	}
+	public void setEnderecoEnum(EnderecoEnum enderecoEnum) {
+		this.enderecoEnum = enderecoEnum;
+	}
+	public ContatoEnum getContatoEnum() {
+		return contatoEnum;
+	}
+	public void setContatoEnum(ContatoEnum contatoEnum) {
+		this.contatoEnum = contatoEnum;
+	}
+	@Override
+	public int hashCode() {
+		return Objects.hash(contatoEnum, contatos, dataAltera, dataCadastro, endereco, enderecoEnum, fornecedorId, nome,
+				produtos);
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Fornecedor other = (Fornecedor) obj;
+		return contatoEnum == other.contatoEnum && Objects.equals(contatos, other.contatos)
+				&& Objects.equals(dataAltera, other.dataAltera) && Objects.equals(dataCadastro, other.dataCadastro)
+				&& Objects.equals(endereco, other.endereco) && enderecoEnum == other.enderecoEnum
+				&& Objects.equals(fornecedorId, other.fornecedorId) && Objects.equals(nome, other.nome)
+				&& Objects.equals(produtos, other.produtos);
+	}
+	@Override
+	public String toString() {
+		return "Fornecedor [fornecedorId=" + fornecedorId + ", nome=" + nome + ", dataCadastro=" + dataCadastro
+				+ ", dataAltera=" + dataAltera + ", enderecoEnum=" + enderecoEnum + ", contatoEnum=" + contatoEnum
+				+ ", endereco=" + endereco + ", contatos=" + contatos + ", produtos=" + produtos + "]";
+	}
+}
