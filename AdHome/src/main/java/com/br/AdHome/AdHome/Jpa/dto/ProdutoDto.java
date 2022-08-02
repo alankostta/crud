@@ -4,6 +4,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import com.br.AdHome.AdHome.models.Produto;
+
 /*Classe responsável por validações de campos que 
  * receberão os dados de entrada
  * dos usúarios tipos de validação{campos vazios ou nulos, limita o campo 
@@ -44,5 +46,30 @@ public class ProdutoDto {
 	}
 	public void setEstoqueQtd(Integer estoqueQtd) {
 		this.estoqueQtd = estoqueQtd;
+	}
+	public Produto toProduto() {
+		Produto produto = new Produto();
+		produto.setDescricao(descricao);
+		produto.setValorEntrada(valorEntrada);
+		produto.setValorSaida(valorSaida);
+		produto.setEstoqueQtd(estoqueQtd);
+		return produto;
+		
+	}
+	public Produto toProduto(Produto produto) {
+		
+		produto.setDescricao(descricao);
+		produto.setValorEntrada(valorEntrada);
+		produto.setValorSaida(valorSaida);
+		produto.setEstoqueQtd(estoqueQtd);
+		return produto;
+		
+	}
+	public void fromProduto(Produto produto) {
+		
+		this.descricao = produto.getDescricao();
+		this.valorEntrada = produto.getValorEntrada();
+		this.valorSaida = produto.getValorSaida();
+		this.estoqueQtd = produto.getEstoqueQtd();
 	}
 }

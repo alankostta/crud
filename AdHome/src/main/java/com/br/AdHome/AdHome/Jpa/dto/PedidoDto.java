@@ -1,6 +1,8 @@
 package com.br.AdHome.AdHome.Jpa.dto;
 
 import javax.validation.constraints.NotNull;
+
+import com.br.AdHome.AdHome.models.Pedido;
 /*Classe responsável por validações de campos que 
  * receberão os dados de entrada
  * dos usúarios tipos de validação{campos vazios ou nulos, limita o campo 
@@ -16,5 +18,18 @@ public class PedidoDto {
 	}
 	public void setQtdItensDto(Integer qtdItens) {
 		this.qtdItens = qtdItens;
+	}
+	public Pedido toPedido() {
+		Pedido pedido = new Pedido();
+		pedido.setQtdItens(qtdItens);
+		return pedido;
+	}
+	public Pedido toPedido(Pedido pedido) {
+		pedido.setQtdItens(qtdItens);
+		return pedido;
+	}
+	public void fromPedido(Pedido pedido) {
+		this.qtdItens = pedido.getQtdItens();
+	
 	}
 }

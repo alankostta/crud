@@ -17,6 +17,7 @@ import javax.persistence.Table;
 @Table(name = "tb_produto")
 public class Produto implements Serializable {
 	private static final long serialVersionUID = 1L;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "produto_id",nullable = false, length = 10, unique = true)
@@ -31,6 +32,8 @@ public class Produto implements Serializable {
 	private Double valorSaida;
 	@Column(name = "Qtd_estoque", nullable = false)
 	private Integer estoqueQtd = 0;
+	@Column(name = "preco", nullable=false)
+	private Double preco;
 	@Column(name = "data_produto", nullable = false, length = 30)
 	private LocalDateTime dataProduto;
 	
@@ -45,9 +48,10 @@ public class Produto implements Serializable {
 	public Produto() {
 		
 	}
-	public Produto(String descricao, Double valorEntrada, Double valorSaida, Integer estoqueQtd, LocalDateTime dataProduto
-			, Pedido pedido, Fornecedor fornecedor) {
+	public Produto(String descricao, Double valorEntrada, Double valorSaida, Integer estoqueQtd, Double preco,
+			LocalDateTime dataProduto, Pedido pedido, Fornecedor fornecedor) {
 		super();
+	
 		this.setDescricao(descricao);
 		this.setValorEntrada(valorEntrada);
 		this.setValorSaida(valorSaida);
@@ -55,10 +59,11 @@ public class Produto implements Serializable {
 		this.setDataProduto(dataProduto);
 		this.setPedido(pedido);
 		this.setFeronecedor(fornecedor);
+		this.setPreco(preco);
 	}
 	@Override
 	public int hashCode() {
-		return Objects.hash(dataProduto, descricao, estoqueQtd, produtoId, valorEntrada, valorSaida);
+		return Objects.hash(dataProduto, descricao, estoqueQtd, produtoId, preco, valorEntrada, valorSaida);
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -71,7 +76,8 @@ public class Produto implements Serializable {
 		Produto other = (Produto) obj;
 		return Objects.equals(dataProduto, other.dataProduto) && Objects.equals(descricao, other.descricao)
 				&& Objects.equals(estoqueQtd, other.estoqueQtd) && Objects.equals(produtoId, other.produtoId)
-				&& Objects.equals(valorEntrada, other.valorEntrada) && Objects.equals(valorSaida, other.valorSaida);
+				&& Objects.equals(valorEntrada, other.valorEntrada) && Objects.equals(valorSaida, other.valorSaida)
+				&& Objects.equals(preco, other.preco);
 	}
 	public Long getProdutoId() {
 		return produtoId;
@@ -122,6 +128,12 @@ public class Produto implements Serializable {
 		this.fornecedor = feronecedor;
 	}
 	
+	public Double getPreco() {
+		return preco;
+	}
+	public void setPreco(Double preco) {
+		this.preco = preco;
+	}
 	public String getMarca() {
 		return marca;
 	}
@@ -138,7 +150,7 @@ public class Produto implements Serializable {
 	public String toString() {
 		return "Produto [produtoId=" + produtoId + ", descricao=" + descricao + ", valorEntrada=" + valorEntrada
 				+ ", valorSaida=" + valorSaida + ", estoqueQtd=" + estoqueQtd + ", dataProduto=" + dataProduto
-				+ ", pedido=" + pedido + ", feronecedor=" + fornecedor + "]";
+				+ ", pedido=" + pedido + ", feronecedor=" + fornecedor + ",preco" + preco +"]";
 	}
 	
 }

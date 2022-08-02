@@ -20,7 +20,9 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "tb_pedido")
 public class Pedido implements Serializable {
+	
 	private static final long serialVersionUID = 1L;
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "pedido_id", nullable = false, length = 10, unique = true)
@@ -52,22 +54,6 @@ public class Pedido implements Serializable {
 		this.setCliente(cliente);
 		this.setPagamanto(pagamento);
 		this.setProduto(getProduto());
-	}
-	@Override
-	public int hashCode() {
-		return Objects.hash(dataPedido, pedidoId, qtdItens);
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Pedido other = (Pedido) obj;
-		return Objects.equals(dataPedido, other.dataPedido) && Objects.equals(pedidoId, other.pedidoId)
-				&& Objects.equals(qtdItens, other.qtdItens);
 	}
 	public Long getPedidoId() {
 		return pedidoId;
@@ -106,9 +92,24 @@ public class Pedido implements Serializable {
 		this.cliente = cliente;
 	}
 	@Override
+	public int hashCode() {
+		return Objects.hash(dataPedido, pedidoId, qtdItens);
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Pedido other = (Pedido) obj;
+		return Objects.equals(dataPedido, other.dataPedido) && Objects.equals(pedidoId, other.pedidoId)
+				&& Objects.equals(qtdItens, other.qtdItens);
+	}
+	@Override
 	public String toString() {
 		return "Pedido [pedidoId=" + pedidoId + ", dataPedido=" + dataPedido + ", qtdItens=" + qtdItens + ", pagamanto="
 				+ pagamanto + ", cliente=" + cliente + ", produto=" + produto + "]";
 	}
-	
 }

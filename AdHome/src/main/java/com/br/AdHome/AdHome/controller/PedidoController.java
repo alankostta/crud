@@ -2,27 +2,27 @@ package com.br.AdHome.AdHome.controller;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Optional;
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.validation.Valid;
-import org.springframework.beans.BeanUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.br.AdHome.AdHome.Jpa.dto.ClienteDto;
 import com.br.AdHome.AdHome.Jpa.dto.PedidoDto;
+import com.br.AdHome.AdHome.Jpa.dto.ProdutoDto;
+import com.br.AdHome.AdHome.models.Cliente;
+import com.br.AdHome.AdHome.models.Endereco;
 import com.br.AdHome.AdHome.models.Pedido;
+import com.br.AdHome.AdHome.models.Produto;
+import com.br.AdHome.AdHome.services.ClienteService;
 import com.br.AdHome.AdHome.services.PedidoService;
+import com.br.AdHome.AdHome.services.ProdutoService;
 
 /*
  * Controlador: responder interações do usuśrio
@@ -32,54 +32,57 @@ import com.br.AdHome.AdHome.services.PedidoService;
  * 2º service envia a solicitação para o repository
  * 3º repository envia para o banco
  */
-@RestController
-@CrossOrigin(origins = "*", maxAge = 3600)
-@RequestMapping("/adhome/pedido")
+@Controller
 public class PedidoController {
+	
 	final PedidoService pedidoService;
-	public PedidoController(PedidoService pedidoService) {
+	final ProdutoService produtoService;
+	final ClienteService clienteService;
+	
+	public PedidoController(PedidoService pedidoService, ProdutoService produtoService, ClienteService clienteService) {
 		this.pedidoService = pedidoService;
+		this.produtoService = produtoService;
+		this.clienteService = clienteService;
 	}
-	@PostMapping
-	public ResponseEntity <Object> salavarPedido(@RequestBody @Valid PedidoDto pedidoDto){
-		var pedido = new Pedido();
-		pedido.setDataPedido(LocalDateTime.now(ZoneId.of("UTC")));
-		BeanUtils.copyProperties(pedidoDto, pedido);
-		return ResponseEntity.status(HttpStatus.CREATED).body(pedidoService.savePedido(pedido));
-	}
-	@GetMapping
-	public ResponseEntity <Page<Pedido>> getAllPagamentos(@PageableDefault(page = 0,
-	size = 10, direction = Sort.Direction.ASC)Pageable pageable){
-		return ResponseEntity.status(HttpStatus.CREATED).body(pedidoService.findAll(pageable));
+	@GetMapping("/produto")
+	public ModelAndView exibirPedido(ProdutoDto produtoDto, PedidoDto pedidoDto, ClienteDto clienteDto) {
 		
+		var mv = new ModelAndView("pedido/pedido");
+		return mv;
 	}
-	@GetMapping("/{pedidoId}")
-	public ResponseEntity <Object> getOnePedidos(@PathVariable(value = "pedidoId")Long id){
-		Optional<Pedido> pedidoOptional = pedidoService.findById(id);
-		if(!pedidoOptional.isPresent()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("O pedido não foi localizado");
+	// Criando os metodos getPost onde irá receber as requisições
+	// que serão persistidas no banco
+	@PostMapping("/pedido")
+	public ModelAndView savePedido(@Valid ClienteDto clienteDto, BindingResult resultCliente,
+			@Valid PedidoDto pedidoDto, BindingResult resultPedido,
+			@Valid ProdutoDto produtoDto, BindingResult resultProduto ) {
+		
+		ModelAndView mv = new ModelAndView("pedido/pedido");
+		
+		
+		if (resultCliente.hasErrors()&& resultPedido.hasErrors()&& resultProduto.hasErrors()) {
+			
+			this.retornaErroPedido("ERRO AO SALVAR: esse cadastro!, verifique se não há compos vazios");
+			return mv;
 		}
-		return ResponseEntity.status(HttpStatus.CREATED).body(pedidoOptional.get());
+		else {
+				Pedido pedido = pedidoDto.toPedido();
+				Produto produto = produtoDto.toProduto();
+				pedido.setDataPedido(LocalDateTime.now(ZoneId.of("UTC")));
+				Set<Produto> produtos = new HashSet<Produto>();
+				produtos.add(produto);
+				pedido.setProduto(produtos);
+				pedidoService.savePedido(pedido);
+				
+				return new ModelAndView("redirect:/cliente/listar");
+		}
+		// método BeanUtils está sendo usado para realizar um cast de clienteDto para
+		// cliente
 	}
-	@DeleteMapping("/{pedidoId}")
-	public ResponseEntity <Object> deletePedido(@PathVariable(value = "pedidoId")Long id){
-		Optional<Pedido> pedidoOptional = pedidoService.findById(id);
-		if(!pedidoOptional.isPresent()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("O pedido não pode ser deletado!");
-		}
-		return ResponseEntity.status(HttpStatus.CREATED).body(pedidoOptional.get());
-	}
-	@PutMapping("/{pedidoId}")
-	public ResponseEntity <Object> updatePedido(@PathVariable(value = "pedidoId")Long id,
-			@RequestBody @Valid PedidoDto pedidoDto){
-		Optional<Pedido> pedidoOptional = pedidoService.findById(id);
-		if(!pedidoOptional.isPresent()) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Pagamento não encontrado para atualização!");
-		}
-		var pedido = new Pedido();
-		pedido.setDataPedido(pedidoOptional.get().getDataPedido());
-		pedido.setPedidoId(pedidoOptional.get().getPedidoId());
-		BeanUtils.copyProperties(pedidoDto, pedido);
-		return ResponseEntity.status(HttpStatus.CREATED).body(pedidoService.savePedido(pedido));
+	private ModelAndView retornaErroPedido(String msg) {
+		ModelAndView mv = new ModelAndView("redirect:/cliente/listar");
+		mv.addObject("mensagem", msg);
+		mv.addObject("erro", true);
+		return mv;
 	}
 }
