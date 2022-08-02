@@ -1,0 +1,183 @@
+package com.br.AdHome.AdHome.controller;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Optional;
+
+import javax.validation.Valid;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.br.AdHome.AdHome.EnumModels.ContatoEnum;
+import com.br.AdHome.AdHome.EnumModels.EnderecoEnum;
+import com.br.AdHome.AdHome.Jpa.dto.ClienteDto;
+import com.br.AdHome.AdHome.Jpa.dto.ContatoDto;
+import com.br.AdHome.AdHome.Jpa.dto.EnderecoDto;
+import com.br.AdHome.AdHome.models.Cliente;
+import com.br.AdHome.AdHome.models.Contato;
+import com.br.AdHome.AdHome.models.Endereco;
+import com.br.AdHome.AdHome.services.ClienteService;
+import com.br.AdHome.AdHome.services.ContatoService;
+import com.br.AdHome.AdHome.services.EnderecoService;
+
+/*
+ * Controlador: responder interações do usuśrio
+ * No caso de uma API REST "interações" são as requisições.
+ * Passos das requisições que serão feitas pelo usúario
+ * 1º controller envia solicitação para o service
+ * 2º service envia a solicitação para o repository
+ * 3º repository envia para o banco
+ */
+@Controller
+public class ClienteController {
+	// insere a classe e ápos isso cria o metodo construtor
+	final ClienteService clienteService;
+	final EnderecoService enderecoService;
+	final ContatoService contatoService;
+	//Metodo construtor da classe Cliente Controller
+	public ClienteController(ClienteService clienteSerice, EnderecoService enderecoService,
+			ContatoService contatoService) {
+		this.clienteService = clienteSerice;
+		this.enderecoService = enderecoService;
+		this.contatoService = contatoService;
+	}
+	@GetMapping("/cliente")
+	public ModelAndView exibirCliente(ClienteDto clienDto, ContatoDto contatoDto, EnderecoDto enderecoDto) {
+		var mv = new ModelAndView("cliente/cliente");
+		return mv;
+	}
+	// Criando os metodos getPost onde irá receber as requisições
+	// que serão persistidas no banco
+	@PostMapping("/cliente")
+	public ModelAndView saveCliente(@Valid ClienteDto clienDto, BindingResult resultCliente,
+			@Valid ContatoDto contatoDto, BindingResult resultContato,
+			@Valid EnderecoDto enderecoDto, BindingResult resultEndereco ) {
+		if (resultCliente.hasErrors()) {
+			ModelAndView mv = new ModelAndView("cliente/cliente");
+			mv.addObject("listaContato",ContatoEnum.values());
+			mv.addObject("listaEndereco",EnderecoEnum.values());
+			return mv;
+		}
+		else if(resultContato.hasErrors()) {
+			ModelAndView mv = new ModelAndView("cliente/cliente");
+			mv.addObject("listaContato",ContatoEnum.values());
+			mv.addObject("listaEndereco",EnderecoEnum.values());
+			return mv;
+		}
+		else if(resultEndereco.hasErrors()) {
+			ModelAndView mv = new ModelAndView("cliente/cliente");
+			mv.addObject("listaContato",ContatoEnum.values());
+			mv.addObject("listaEndereco",EnderecoEnum.values());
+			return mv;
+		}
+		else {
+				Cliente cliente = clienDto.toCliente();
+				Contato contato = contatoDto.toContato();
+				Endereco endereco = enderecoDto.toEndereco();
+				cliente.setData(LocalDateTime.now(ZoneId.of("UTC")));
+				clienteService.saveCliente(cliente);
+				contatoService.saveContato(contato);
+				enderecoService.saveEndereco(endereco);
+				
+				return new ModelAndView("redirect:/cliente/listar");
+		}
+		// método BeanUtils está sendo usado para realizar um cast de clienteDto para
+		// cliente
+	}
+	@GetMapping("cliente/listar")
+	public ModelAndView listarClientes() {
+		var mv = new ModelAndView("cliente/listar");
+		Iterable<Cliente> cliente = clienteService.findAll();
+		mv.addObject("cliente", cliente);
+		mv.addObject("listaContato",ContatoEnum.values());
+		mv.addObject("listaEndereco",EnderecoEnum.values());
+		return mv;
+	}
+	@GetMapping("cliente/{clienteId}")
+	public ModelAndView getOneCliente(@PathVariable(value = "clienteId") Long id) {
+		Optional<Cliente> clienteOptional = clienteService.findById(id);
+		var mv = new ModelAndView("cliente/exibir");
+		if (!clienteOptional.isPresent()) {
+			return this.retornaErroCliente("ERRO AO EXIBIR: Cliente com inscrição ("+id+") não foi encontrado no banco!");
+
+		} else {
+			Cliente cliente = clienteOptional.get();
+			mv.addObject("cliente", cliente);
+			mv.addObject("listaContato",ContatoEnum.values());
+			mv.addObject("listaEndereco",EnderecoEnum.values());
+			mv.addObject("mensagem", "PESQUISA CLIENTE " + id + " encontrado com sucesso!");
+			mv.addObject("erro", false);
+			return mv;
+		}
+	}
+	@GetMapping("cliente/{clienteId}/excluir")
+	public ModelAndView deleteCliente(@PathVariable(value = "clienteId") Long id) {
+		Optional<Cliente> clienteOptional = clienteService.findById(id);
+		
+		if (!clienteOptional.isPresent()) {
+			return this.retornaErroCliente("ERRO AO EXCLUIR: Cliente com inscrição ("+id+") não foi encontrado no banco!");
+		} else {
+				ModelAndView mv = new ModelAndView("redirect:/cliente/listar");
+				clienteService.deleteCliente(clienteOptional.get());
+				mv.addObject("mensagem", "Cliente com inscrição" + id + " foi excluido com sucesso!");
+				mv.addObject("erro", false);
+				return mv;
+		}
+		
+	}
+	// para testar no postman precisa usar o Id
+	@GetMapping("cliente/{clienteId}/editar")
+	public ModelAndView upClinte(@PathVariable(value = "clienteId") Long id, ClienteDto clienteDto) {
+		Optional<Cliente> clienteOptional = this.clienteService.findById(id);
+		if (clienteOptional.isPresent()) {
+			Cliente cliente = clienteOptional.get();
+			clienteDto.fromCliente(cliente);
+			ModelAndView mv = new ModelAndView("cliente/editar");
+			mv.addObject("clienteId", cliente.getClienteId());
+			mv.addObject("listaContato",ContatoEnum.values());
+			mv.addObject("listaEndereco",EnderecoEnum.values());
+			mv.addObject("mensagem", "Cliente com inscrição " + id + " foi editado com sucesso!");
+			mv.addObject("erro", false);
+			return mv;
+		} else {
+				return this.retornaErroCliente("ERRO AO EDITAR: Cliente com inscrição ("+id+") não foi encontrado no banco!");
+		}
+	}
+	@PostMapping("cliente/{clienteId}")
+	public ModelAndView updateCliente(@PathVariable(value = "clienteId") Long id, @Valid ClienteDto clienteDto,
+			BindingResult result) {
+		ModelAndView mv = new ModelAndView("redirect:/cliente/listar");
+		if (result.hasErrors()) {
+			mv.addObject("clienteId", id);
+			mv.addObject("listaContato",ContatoEnum.values());
+			mv.addObject("listaEndereco",EnderecoEnum.values());
+			return mv;
+		} else {
+				Optional<Cliente> clienteOptional = this.clienteService.findById(id);
+				if (clienteOptional.isPresent()) {
+					Cliente cliente = clienteDto.toCliente(clienteOptional.get());
+					cliente.setDataAltera(LocalDateTime.now(ZoneId.of("UTC")));
+					
+					this.clienteService.saveCliente(cliente);
+					mv.addObject("mensagem", "Cliente com inscrição " + id + " foi salvo com sucesso!");
+					mv.addObject("erro", false);
+					return mv;
+			} else {
+					return this.retornaErroCliente("ERRO AO SALVAR: Cliente com inscrição ("+id+") não foi encontrado no banco!");
+			}
+		}
+		// método BeanUtils está sendo usado para realizar um cast de clienteDto para
+		// cliente
+	}
+	private ModelAndView retornaErroCliente(String msg) {
+		ModelAndView mv = new ModelAndView("redirect:/cliente/listar");
+		mv.addObject("mensagem", msg);
+		mv.addObject("erro", true);
+		return mv;
+	}
+}

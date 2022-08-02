@@ -1,0 +1,19 @@
+package com.br.AdHome.AdHome.services;
+
+import org.springframework.stereotype.Service;
+
+import com.br.AdHome.AdHome.models.Pagamento;
+import com.br.AdHome.AdHome.repositories.PagamentoRepository;
+
+@Service
+public class PagamentoService {
+	
+	final PagamentoRepository pagamentoRepository;
+	
+	public PagamentoService(PagamentoRepository pagamentoRepository) {
+		this.pagamentoRepository = pagamentoRepository;
+	}
+	public Pagamento salvePagamanto(Pagamento pagamento) {
+		return pagamentoRepository.save(pagamento);
+	}
+}

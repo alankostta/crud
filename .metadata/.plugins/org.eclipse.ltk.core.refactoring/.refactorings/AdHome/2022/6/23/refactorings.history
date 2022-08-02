@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename package &apos;configs&apos; to &apos;com.br.AdHome.AdHome.configs&apos;&#x0A;- Original project: &apos;AdHome&apos;&#x0A;- Original element: &apos;AdHome/src/main/java/configs&apos;&#x0A;- Renamed element: &apos;AdHome/src/main/java/com.br.AdHome.AdHome.configs&apos;&#x0A;- Update references to refactored element&#x0A;- Update textual occurrences in comments and strings" description="Rename package &apos;configs&apos;" flags="589830" hierarchical="false" id="org.eclipse.jdt.ui.rename.package" input="/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;configs" name="com.br.AdHome.AdHome.configs" qualified="false" references="true" stamp="1654074533245" textual="false" version="1.0"/>
+</session>

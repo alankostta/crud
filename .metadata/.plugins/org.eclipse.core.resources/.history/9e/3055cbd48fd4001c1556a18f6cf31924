@@ -1,0 +1,108 @@
+package com.br.AdHome.AdHome.controller;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import javax.validation.Valid;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.br.AdHome.Jpa.dto.ClienteDto;
+import com.br.AdHome.models.Cliente;
+import com.brAdHome.services.ClienteService;
+
+/*
+ * Controlador: responder interações do usuśrio
+ * No caso de uma API REST "interações" são as requisições.
+ * Passos das requisições que serão feitas pelo usúario
+ * 1º controller envia solicitação para o service
+ * 2º service envia a solicitação para o repository
+ * 3º repository envia para o banco
+ */
+@RestController
+@CrossOrigin(origins = "*", maxAge = 3600)
+@RequestMapping("/adhome")
+public class ClienteController {
+	// insere a classe e ápos isso cria o metodo construtor
+	final ClienteService clienteService;
+
+	public ClienteController(ClienteService clienteSerice) {
+		this.clienteService = clienteSerice;
+	}
+
+	// Criando os metodos getPost onde irá persistir uma informação no banco
+	@PostMapping
+	public ResponseEntity<Object> saveCliente(@RequestBody @Valid ClienteDto clienteDto) {
+		var cliente = new Cliente();
+		// método BeanUtils está sendo usado para realizar um cast de clienteDto para
+		// cliente
+		BeanUtils.copyProperties(clienteDto, cliente);
+		return ResponseEntity.status(HttpStatus.CREATED).body(clienteService.saveCliente(cliente));
+	}
+
+	@GetMapping
+	public ResponseEntity<List<Cliente>> getAllCliente() {
+		return ResponseEntity.status(HttpStatus.OK).body(clienteService.findAll());
+	}
+
+	@GetMapping("/{cliente_id}")
+	public ResponseEntity<Object> getOneCliente(@PathVariable(value = "cliente_id") UUID id){
+		Optional<Cliente> clienteOptional = clienteService.findById(id);
+		if(!clienteOptional.isPresent()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cliente não encontrado!");
+		}
+		return ResponseEntity.status(HttpStatus.OK).body(clienteOptional.get());
+	}
+	@DeleteMapping("/{cliente_id}")
+	public ResponseEntity<Object> deleteCliente(@PathVariable(value = "cliente_id") UUID id){
+		Optional<Cliente> clienteOptional = clienteService.findById(id);
+		if(!clienteOptional.isPresent()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cliente não encontrado!");
+		}
+		clienteService.delete(clienteOptional.get());
+		return ResponseEntity.status(HttpStatus.OK).body("Cadastro deletado com sucesso!!!");
+	}
+	
+	@PutMapping("/{cliente_id}")
+	public ResponseEntity<Object> updateClinte(@PathVariable(value = "clinte_id")UUID id, @RequestBody @Valid ClienteDto clienteDto){
+		Optional<Cliente> clienteOptional = clienteService.findById(id);
+		if(!clienteOptional.isPresent()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cadastro não pode ser atualizado!!!");
+		}
+		var cliente = new Cliente();
+		return ResponseEntity.status(HttpStatus.OK).body(clienteService.saveCliente(cliente));
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

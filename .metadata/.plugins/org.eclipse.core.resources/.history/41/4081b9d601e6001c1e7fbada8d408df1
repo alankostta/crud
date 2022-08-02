@@ -1,0 +1,32 @@
+package com.br.AdHome.AdHome.controller;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.br.AdHome.AdHome.services.FornecedorService;
+/*
+ * Controlador: responder interações do usuśrio
+ * No caso de uma API REST "interações" são as requisições.
+ * Passos das requisições que serão feitas pelo usúario
+ * 1º controller envia solicitação para o service
+ * 2º service envia a solicitação para o repository
+ * 3º repository envia para o banco
+ */
+@RestController
+@CrossOrigin(origins = "*", maxAge = 3600)
+@RequestMapping("/adhome/fornecedor")
+public class FornecedorController {
+	
+	final FornecedorService fornecedorService;
+	public FornecedorController(FornecedorService fornecedorService) {
+		this.fornecedorService = fornecedorService;
+	}
+	@PostMapping
+	public ResponseEntity <Object> salvarFornecedor(@RequestBody @Valid FornecedorDto fornecedorDto){
+		var fornecedor = new Fornecedor();
+		BeanUtils.copyProperties(fornecedorDto, fornecedor);
+	}
+
+}

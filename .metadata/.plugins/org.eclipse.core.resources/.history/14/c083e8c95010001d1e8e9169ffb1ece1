@@ -1,0 +1,36 @@
+package com.br.AdHome.AdHome.controller;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.br.AdHome.AdHome.Jpa.dto.FornecedorDto;
+import com.br.AdHome.AdHome.services.ContatoService;
+import com.br.AdHome.AdHome.services.EnderecoService;
+import com.br.AdHome.AdHome.services.FornecedorService;
+/*
+ * Controlador: responder interações do usuśrio
+ * No caso de uma API REST "interações" são as requisições.
+ * Passos das requisições que serão feitas pelo usúario
+ * 1º controller envia solicitação para o service
+ * 2º service envia a solicitação para o repository
+ * 3º repository envia para o banco
+ */
+@Controller
+public class FornecedorController {
+	
+	final FornecedorService fornecedorService;
+	final ContatoService contatoService;
+	final EnderecoService enderecoService;
+	public FornecedorController(FornecedorService fornecedorService, ContatoService contatoService,
+		 EnderecoService enderecoService) {
+		this.fornecedorService = fornecedorService;
+		this.contatoService = contatoService;
+		this.enderecoService = enderecoService;
+	}
+	@GetMapping("/fornecedor")
+	public ModelAndView exibirFornecedor(FornecedorDto fornecedorDto) {
+		ModelAndView mv = new ModelAndView("fornecedor/fornecedor");	
+		return mv;
+	}
+}

@@ -1,0 +1,45 @@
+package com.br.AdHome.AdHome.controller;
+
+import java.time.LocalDateTime;
+
+import javax.validation.Valid;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.br.AdHome.AdHome.Jpa.dto.PedidoDto;
+import com.br.AdHome.AdHome.models.Pedido;
+import com.br.AdHome.AdHome.services.PedidoService;
+
+/*
+ * Controlador: responder interações do usuśrio
+ * No caso de uma API REST "interações" são as requisições.
+ * Passos das requisições que serão feitas pelo usúario
+ * 1º controller envia solicitação para o service
+ * 2º service envia a solicitação para o repository
+ * 3º repository envia para o banco
+ */
+@RestController
+@CrossOrigin(origins = "*", maxAge = 3600)
+@RequestMapping("/adhome/pedido")
+public class PedidoController {
+	final PedidoService pedioService;
+	public PedidoController(PedidoService pedidoService) {
+		this.pedioService = pedidoService;
+	}
+	@PostMapping
+	public ResponseEntity <Object> salavarPedido(@RequestBody @Valid PedidoDto pedidoDto){
+		var pedido = new Pedido();
+		pedido.setDataPedido(LocalDateTime.now());
+		BeanUtils.copyProperties(pedidoDto, pedido);
+		return ResponseEntity.status(HttpStatus.CREATED).body(PedidoService.save(pedido));
+	}
+	
+
+}

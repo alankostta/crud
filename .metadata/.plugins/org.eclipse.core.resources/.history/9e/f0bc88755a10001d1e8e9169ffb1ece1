@@ -1,0 +1,105 @@
+package com.br.AdHome.AdHome.controller;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.HashSet;
+import java.util.Set;
+import javax.validation.Valid;
+import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.ModelAndView;
+import com.br.AdHome.AdHome.Jpa.dto.ContatoDto;
+import com.br.AdHome.AdHome.Jpa.dto.EnderecoDto;
+import com.br.AdHome.AdHome.Jpa.dto.FornecedorDto;
+import com.br.AdHome.AdHome.models.Cliente;
+import com.br.AdHome.AdHome.models.Contato;
+import com.br.AdHome.AdHome.models.ContatoEnum;
+import com.br.AdHome.AdHome.models.Endereco;
+import com.br.AdHome.AdHome.models.EnderecoEnum;
+import com.br.AdHome.AdHome.models.Fornecedor;
+import com.br.AdHome.AdHome.services.ContatoService;
+import com.br.AdHome.AdHome.services.EnderecoService;
+import com.br.AdHome.AdHome.services.FornecedorService;
+/*
+ * Controlador: responder interações do usuśrio
+ * No caso de uma API REST "interações" são as requisições.
+ * Passos das requisições que serão feitas pelo usúario
+ * 1º controller envia solicitação para o service
+ * 2º service envia a solicitação para o repository
+ * 3º repository envia para o banco
+ */
+@Controller
+public class FornecedorController {
+	
+	final FornecedorService fornecedorService;
+	final ContatoService contatoService;
+	final EnderecoService enderecoService;
+	
+	public FornecedorController(FornecedorService fornecedorService, ContatoService contatoService,
+		 EnderecoService enderecoService) {
+		this.fornecedorService = fornecedorService;
+		this.contatoService = contatoService;
+		this.enderecoService = enderecoService;
+	}
+	@GetMapping("/fornecedor")
+	public ModelAndView exibirFornecedor(FornecedorDto fornecedorDto,ContatoService contatoService,
+			 EnderecoService enderecoService) {
+		ModelAndView mv = new ModelAndView("fornecedor/fornecedor");
+		mv.addObject("listaContato",ContatoEnum.values());
+		mv.addObject("listaEndereco",EnderecoEnum.values());
+		return mv;
+	}
+	@PostMapping("/fornecedor")
+	public ModelAndView saveCliente(@Valid FornecedorDto fornecedorDto, BindingResult resultFornecedor,
+			@Valid ContatoDto contatoDto, BindingResult resultContato,
+			@Valid EnderecoDto enderecoDto, BindingResult resultEndereco ) {
+		
+		ModelAndView mv = new ModelAndView("fornecedor/fornecedor");
+		mv.addObject("listaContato",ContatoEnum.values());
+		mv.addObject("listaEndereco",EnderecoEnum.values());
+		
+		if (resultFornecedor.hasErrors()&& resultContato.hasErrors()&& resultEndereco.hasErrors()) {
+			mv.addObject("listaContato",ContatoEnum.values());
+			mv.addObject("listaEndereco",EnderecoEnum.values());
+			this.retornaErroFornecedor("ERRO AO SALVAR: esse cadastro!, verifique se não há compos vazios");
+			return mv;
+		}
+		else {
+				Fornecedor fornecedor = fornecedorDto.toFornecedor();
+				Contato contato = contatoDto.toContato();
+				Endereco endereco = enderecoDto.toEndereco();
+				fornecedor.setDataCadastro(LocalDateTime.now(ZoneId.of("UTC")));
+				fornecedor.setDataAltera(LocalDateTime.now(ZoneId.of("UTC")));
+				Set<Contato> conta = new HashSet<Contato>();
+				conta.add(contato);
+				fornecedor.setContatos(conta);
+				Set<Endereco> endere = new HashSet<Endereco>();
+				endere.add(endereco);
+				fornecedor.setEndereco(endere);
+				fornecedorService.saveFornecedor(fornecedor);
+				
+				return new ModelAndView("redirect:/fornecedor/fornecedor");
+		}
+		// método BeanUtils está sendo usado para realizar um cast de clienteDto para
+		// cliente
+	}
+	@GetMapping("fornecedor/listar")
+	public ModelAndView listarClientes() {
+		
+		var mv = new ModelAndView("cliente/listar");
+		Iterable<Fornecedor> fornecedor = fornecedorService.findAll();
+		mv.addObject("fornecedor", fornecedor);
+		mv.addObject("listaContato",ContatoEnum.values());
+		mv.addObject("listaEndereco",EnderecoEnum.values());
+		mv.addObject("mensagem", "PESQUISA REALIZADA COM SUCESSO!");
+		return mv;
+	}
+	private ModelAndView retornaErroFornecedor(String msg) {
+		ModelAndView mv = new ModelAndView("redirect:/fornecedor/fornecedor");
+		mv.addObject("mensagem", msg);
+		mv.addObject("erro", true);
+		return mv;
+	}
+}
